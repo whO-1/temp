@@ -1,16 +1,17 @@
 ﻿namespace AreaCalculator.Models
 {
-	public class Square : IGeometricFigure
+	public class Square : GeometricFigure
 	{
-		private int _side;
-		public virtual double Area
-		{
-			get { return Math.Pow(_side, 2); }
-		}
-
-		public Square(int side)
+		private readonly double _side;
+		
+		public Square(double side)
 		{
 			_side = side;
+		}
+
+		public override double CalculateArea()
+		{
+			return Math.Pow(_side, 2); 
 		}
 	}
 }

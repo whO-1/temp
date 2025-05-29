@@ -1,16 +1,20 @@
 ﻿namespace AreaCalculator.Models
 {
-	public class Circle : IGeometricFigure
+	public class Circle : GeometricFigure
 	{
-		private readonly int _radius;
-		public virtual double Area
+		private readonly double _radius;
+		
+		public Circle( double radius )
 		{
-			get {  return Math.PI*Math.Pow(_radius,2); }
-		}
-
-		public Circle( int radius )
-		{
+			if (radius <= 0)
+			{
+				throw new ArgumentException("Radius must be greater than 0.");
+			}
 			_radius = radius;
+		}
+		public override double CalculateArea()
+		{
+			return Math.PI * Math.Pow(_radius, 2);
 		}
 	}
 }
