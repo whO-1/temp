@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35309.182
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumFinder", "SumFinder.csproj", "{2ECBE54C-E804-439A-B0BF-AE329E5882F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumFinderTests", "..\SumFinderTests\SumFinderTests.csproj", "{EB0CA40B-DD4E-463A-99ED-9E01884BC883}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2ECBE54C-E804-439A-B0BF-AE329E5882F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ECBE54C-E804-439A-B0BF-AE329E5882F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ECBE54C-E804-439A-B0BF-AE329E5882F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ECBE54C-E804-439A-B0BF-AE329E5882F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB0CA40B-DD4E-463A-99ED-9E01884BC883}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB0CA40B-DD4E-463A-99ED-9E01884BC883}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB0CA40B-DD4E-463A-99ED-9E01884BC883}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB0CA40B-DD4E-463A-99ED-9E01884BC883}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D8EE01F9-858C-47B2-86F4-A9AFDBB5BA5F}
+	EndGlobalSection
+EndGlobal
