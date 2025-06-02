@@ -1,4 +1,4 @@
-﻿namespace EmployeeManagement.API.Models
+﻿namespace EmployeeManagement.API.Models.Requests
 {
 	public class DeleteEmployeeRequest
 	{

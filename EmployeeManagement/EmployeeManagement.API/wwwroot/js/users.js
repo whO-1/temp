@@ -30,10 +30,10 @@ function loadDataTable() {
                 "render": function (data) {
                     return (`
                         <div class="btn-group " role="group">
-                            <button type="button" class="edit-btn btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateEmployeeModal" data-id="${data}">
+                            <button  type="button" class="edit-btn btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateEmployeeModal" data-id="${data}">
                                 Edit
                             </button>
-                            <button class="delete-btn btn btn-danger" data-id="${data}">Delete</button>
+                            <button  class="delete-btn btn btn-danger" data-id="${data}">Delete</button>
                         </div>
                     `);
                 },
@@ -64,26 +64,6 @@ $('#tblData').on('click', '.delete-btn', function () {
             }
         });
     }
-});    
-
-$('#tblData').on('click', '.edit-btn', function () {
-    var employeeId = $(this).data('id');
-    $.get(`/Employees?handler=Employee&id=${employeeId}`, function (data) {
-        console.log(data)
-        $('#editEmployeeId').val(data.id);
-        $('#editFullName').val(data.fullName);
-        $('#editBirthday').val(data.birthday);
-        $('#editSalary').val(data.salary);
-        $('#editStartedFrom').val(data.employedFrom);
-        $('#editEndedAt').val(data.endedAt || '');
-        $('#editPositionId option').each(function () {
-            if ($(this).val().toLocaleLowerCase() === data.positionId) {
-                console.log("found: ",data.positionId)
-                $(this).prop('selected', true);
-                return false; 
-            }
-        });
-        $('#editPositionId').change();
-        $('#editEmployeeModal').modal('show');
-    });
 }); 
+
+

@@ -1,24 +1,22 @@
 ﻿using Azure.Core;
-using EmployeeManagement.API.Models;
+using EmployeeManagement.API.Models.Requests;
 using EmployeeManagement.API.Models.ViewModels;
 using EmployeeManagement.DAL.Data;
 using EmployeeManagement.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagement.API.Pages
 {
-    public class EmployeesModel : PageModel
+	public class EmployeesModel : PageModel
     {
         private readonly ILogger<EmployeesModel> _logger;
         private readonly EmployeeManagementDbContext _context;
 		public List<SelectListItem> PositionOptions { get; set; } = new();
-
-		public CreateEmployeeViewModel CreateInput { get; set; }
-		public UpdateEmployeeViewModel UpdateInput { get; set; }
-
 
 		public EmployeesModel(ILogger<EmployeesModel> logger, EmployeeManagementDbContext context)
         {
@@ -75,60 +73,23 @@ namespace EmployeeManagement.API.Pages
 		}
 
 		
-		public async Task<JsonResult> OnPostCreateAsync([FromBody] CreateEmployeeViewModel CreateInput)
+		public async Task<JsonResult> OnPostCreateAsync([FromBody] EmployeeViewModel model )
 		{
 			if (!ModelState.IsValid)
 				return new JsonResult(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
 
-			var position = await _context.Positions.FindAsync(CreateInput.PositionId);
-			if (position == null)
-				return new JsonResult(new { success = false, message = "Position not found" });
+			
 
-			var employee = new Employee
-			{
-				FullName = CreateInput.FullName,
-				Birthday = CreateInput.Birthday,
-				OwnedPositions = new List<EmployeePositions>()
-			};
-
-			var employeePosition = new EmployeePositions
-			{
-				EmployeeId = employee.Id,
-				PositionId = position.Id,
-				Salary = CreateInput.Salary,
-				StartedFrom = CreateInput.StartedFrom,
-				EndedAt = CreateInput.EndedAt,
-				Employee = employee,
-				Position = position
-			};
-
-			employee.OwnedPositions.Add(employeePosition);
-			_context.Employees.Add(employee);
-
-			await _context.SaveChangesAsync();
-
-			return new JsonResult(new { success = true, employee.Id });
+			return new JsonResult(new { success = true });
 		}
 
 		
-		public async Task<JsonResult> OnPostUpdateAsync([FromBody] UpdateEmployeeViewModel UpdateInput )
+		public async Task<JsonResult> OnPostUpdateAsync()
 		{
 			if (!ModelState.IsValid)
 				return new JsonResult(new { success = false, errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
 
 
-			var employee = await _context.Employees
-			.Include(e => e.OwnedPositions)
-			.FirstOrDefaultAsync(e => e.Id == UpdateInput.Id);
-
-			if (employee == null)
-				return new JsonResult(new { success = false, message = "Employee not found" });
-
-			employee.FullName = UpdateInput.FullName;
-			employee.Birthday = UpdateInput.Birthday;
-
-			_context.Employees.Update(employee);
-			await _context.SaveChangesAsync();
 
 			return new JsonResult(new { success = true });
 		}
@@ -144,6 +105,59 @@ namespace EmployeeManagement.API.Pages
 			await _context.SaveChangesAsync();
 
 			return new JsonResult(new { success = true });
+		}
+
+		public async Task<PartialViewResult> OnGetLoadEmployeeModalAsync(Guid? id)
+		{
+			EmployeeViewModel model;
+
+			if (id.HasValue)
+			{
+				var employee = await _context.Employees
+					.Include(e => e.OwnedPositions)
+					.FirstOrDefaultAsync(e => e.Id == id.Value);
+
+				if (employee == null)
+				{
+					model = new EmployeeViewModel(); // fallback
+				}
+				else
+				{
+					model = new EmployeeViewModel
+					{
+						Id = employee.Id,
+						FullName = employee.FullName,
+						Birthday = employee.Birthday,
+						Salary = employee.OwnedPositions.FirstOrDefault()?.Salary ?? 0,
+						StartedFrom = employee.OwnedPositions.OrderByDescending(op => op.StartedFrom).FirstOrDefault().StartedFrom,
+						EndedAt = employee.OwnedPositions.FirstOrDefault()?.EndedAt,
+						PositionId = employee.OwnedPositions.FirstOrDefault()?.PositionId ?? Guid.Empty
+					};
+				}
+			}
+			else
+			{
+				model = new EmployeeViewModel(); // Create case
+			}
+
+			var positionOptions = await _context.Positions
+				.Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Title })
+				.ToListAsync();
+
+			var viewData = new ViewDataDictionary<EmployeeViewModel>(metadataProvider: new EmptyModelMetadataProvider(),modelState: ModelState)
+			{
+				Model = model 
+			};
+
+			viewData["PositionOptions"] = positionOptions;
+			viewData["Title"] = id.HasValue ? "Update" : "Create";
+
+			return new PartialViewResult
+			{
+				ViewName = "_ModalFormPartial",
+				ViewData = viewData
+			};
+
 		}
 	}
 

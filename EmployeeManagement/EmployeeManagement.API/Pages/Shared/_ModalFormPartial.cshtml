@@ -1,0 +1,66 @@
+﻿@model EmployeeManagement.API.Models.ViewModels.EmployeeViewModel
+@{
+    var isUpdate = Model.Id != Guid.Empty;
+    var title = isUpdate ? "Update Employee" : "Create Employee";
+    var positionOptions = ViewData["PositionOptions"] as List<SelectListItem>;
+
+}
+
+<div class="modal fade" id="employeeModal" tabindex="-1" aria-labelledby="employeeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="employeeForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">@title</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <input type="hidden" name="Id" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="FullName" value="@Model.FullName" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Birthday</label>
+                        <input type="date" name="Birthday" value="@Model.Birthday.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Salary</label>
+                        <input type="number" step="1" name="Salary" value="@Model.Salary" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Started From</label>
+                        <input type="date" name="StartedFrom" value="@Model.StartedFrom.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Ended At</label>
+                        <input type="date" name="EndedAt" value="@Model.EndedAt?.ToString("yyyy-MM-dd")" class="form-control" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Position</label>
+                        <select name="PositionId" class="form-select">
+                            <option value="">-- Select Position --</option>
+                            @foreach (var item in (ViewData["PositionOptions"] as List<SelectListItem> ?? new()))
+                            {
+                                var selected = item.Value == Model.PositionId.ToString() ? "selected" : "";
+                                <option value="@item.Value" selected="@selected">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
