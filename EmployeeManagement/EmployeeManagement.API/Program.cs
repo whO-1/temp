@@ -1,4 +1,5 @@
 using EmployeeManagement.API.Configurations;
+using EmployeeManagement.BLL;
 using EmployeeManagement.DAL.Data;
 using Microsoft.EntityFrameworkCore;
 using NLog;
@@ -22,6 +23,8 @@ try
 	builder.Services.AddDbConfig(builder.Configuration);
 
 	builder.Services.AddRazorPages();
+	builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+	builder.Services.AddScoped <IPositionService, PositionService > ();
 
 	var app = builder.Build();
 

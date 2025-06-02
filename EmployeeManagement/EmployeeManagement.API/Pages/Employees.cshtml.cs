@@ -1,70 +1,49 @@
-﻿using Azure.Core;
-using EmployeeManagement.API.Models.Requests;
+﻿using EmployeeManagement.API.Models.Requests;
 using EmployeeManagement.API.Models.ViewModels;
-using EmployeeManagement.DAL.Data;
-using EmployeeManagement.Domain.Entities;
+using EmployeeManagement.BLL;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeManagement.API.Pages
 {
 	public class EmployeesModel : PageModel
     {
         private readonly ILogger<EmployeesModel> _logger;
-        private readonly EmployeeManagementDbContext _context;
+		private readonly EmployeeService _employeeService;
+		private readonly PositionService _positionService;
 		public List<SelectListItem> PositionOptions { get; set; } = new();
 
-		public EmployeesModel(ILogger<EmployeesModel> logger, EmployeeManagementDbContext context)
+		public EmployeesModel(ILogger<EmployeesModel> logger, EmployeeService employeeService, PositionService positionService)
         {
             _logger = logger;
-			_context = context;
+			_employeeService = employeeService;
+			_positionService = positionService;
         }
 
 
         public async Task OnGetAsync()
         {
-			PositionOptions = await _context.Positions
-			.Select(p => new SelectListItem
+			var positions = await _positionService.GetPositionsAsync();
+			PositionOptions = positions.Select(p =>  new SelectListItem
 			{
 				Value = p.Id.ToString(),
-				Text = p.Title
-			}).ToListAsync();
+				Text = p.Title,
+			}).ToList();
 		}
 
 		public async Task<JsonResult> OnGetEmployeesAsync()
 		{
-			var employees = await _context.Employees
-				.Select(e => new {
-					Department = e.OwnedPositions.OrderByDescending(op => op.StartedFrom).Select(op => op.Position.Department).FirstOrDefault(),
-					e.FullName,
-					e.Birthday,
-					EmployedFrom = e.OwnedPositions.OrderBy(op => op.StartedFrom).Select(op => op.StartedFrom).FirstOrDefault(),
-					Salary = e.OwnedPositions.OrderByDescending(op => op.Salary).Select(op => op.Salary).FirstOrDefault(),
-					e.Id,
-				})
-				.ToListAsync();
+			var employees = await _employeeService.GetEmployeesAsync();
 
 			return new JsonResult(new { data = employees });
 		}
 
 		public async Task<JsonResult> OnGetEmployeeAsync([FromQuery] Guid Id)
 		{
-			var employee = await _context.Employees
-				.Where(e => e.Id == Id)
-				.Select(e => new {
-					e.Id,
-					e.FullName,
-					Birthday = e.Birthday.ToString("yyyy-MM-dd"),
-					Salary = e.OwnedPositions.OrderByDescending(op => op.Salary).Select(op => op.Salary).FirstOrDefault(),
-					EmployedFrom = e.OwnedPositions.OrderBy(op => op.StartedFrom).Select(op => op.StartedFrom).FirstOrDefault().ToString("yyyy-MM-dd"),
-					EndedAt = e.OwnedPositions.OrderByDescending(op => op.StartedFrom).Select(op => op.EndedAt).FirstOrDefault().ToString() ?? null,
-					PositionId = e.OwnedPositions.OrderByDescending(op => op.StartedFrom).Select(op => op.PositionId).FirstOrDefault(),
-				})
-				.FirstOrDefaultAsync();
+			var employee = await _employeeService.GetEmployeeAsync(Id);
 
 			if (employee == null)
 				return new JsonResult(null);
@@ -97,14 +76,10 @@ namespace EmployeeManagement.API.Pages
 		public async Task<JsonResult> OnPostDeleteAsync([FromBody] DeleteEmployeeRequest request)
 		{
 			_logger.LogInformation("Entered delete endpoint");
-			var employee = await _context.Employees.FindAsync(request.Id);
-			if (employee == null)
-				return new JsonResult(new { success = false, message = "Employee not found" });
+			
+			var result = await _employeeService.DeleteEmployeeAsync(request.Id);
 
-			_context.Employees.Remove(employee);
-			await _context.SaveChangesAsync();
-
-			return new JsonResult(new { success = true });
+			return new JsonResult(new { success = result });
 		}
 
 		public async Task<PartialViewResult> OnGetLoadEmployeeModalAsync(Guid? id)
@@ -113,13 +88,11 @@ namespace EmployeeManagement.API.Pages
 
 			if (id.HasValue)
 			{
-				var employee = await _context.Employees
-					.Include(e => e.OwnedPositions)
-					.FirstOrDefaultAsync(e => e.Id == id.Value);
+				var employee = await  _employeeService.GetEmployeeAsync(id.Value);
 
 				if (employee == null)
 				{
-					model = new EmployeeViewModel(); // fallback
+					model = new EmployeeViewModel();
 				}
 				else
 				{
@@ -128,21 +101,23 @@ namespace EmployeeManagement.API.Pages
 						Id = employee.Id,
 						FullName = employee.FullName,
 						Birthday = employee.Birthday,
-						Salary = employee.OwnedPositions.FirstOrDefault()?.Salary ?? 0,
-						StartedFrom = employee.OwnedPositions.OrderByDescending(op => op.StartedFrom).FirstOrDefault().StartedFrom,
-						EndedAt = employee.OwnedPositions.FirstOrDefault()?.EndedAt,
-						PositionId = employee.OwnedPositions.FirstOrDefault()?.PositionId ?? Guid.Empty
+						Salary = employee.CurrentSalary,
+						StartedFrom = employee.EmployedFrom,
+						PositionId = employee.CurrentPositionId,
 					};
 				}
 			}
 			else
 			{
-				model = new EmployeeViewModel(); // Create case
+				model = new EmployeeViewModel();
 			}
 
-			var positionOptions = await _context.Positions
-				.Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Title })
-				.ToListAsync();
+			var positions = await _positionService.GetPositionsAsync();
+
+			var positionOptions = positions.Select(p => new SelectListItem {
+				Value = p.Id.ToString(), 
+				Text = p.Title 
+			});
 
 			var viewData = new ViewDataDictionary<EmployeeViewModel>(metadataProvider: new EmptyModelMetadataProvider(),modelState: ModelState)
 			{

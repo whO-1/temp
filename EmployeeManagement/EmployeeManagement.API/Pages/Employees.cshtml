@@ -46,8 +46,10 @@
         
         function openEmployeeModal(id = null) {
             const url = id
-                ? '@Url.Page("Employees", "LoadEmployeeModal")' + '?id=' + id
+                ? '@Url.Page("Employees", "LoadEmployeeModal")' + '&id=' + id
                 : '@Url.Page("Employees", "LoadEmployeeModal")';
+
+            console.log("url", url)
 
             $.get(url, function(html) {
                 $('#employeeModalContainer').html(html);
@@ -72,7 +74,9 @@
 
             const isUpdate = formData.Id && formData.Id !== '00000000-0000-0000-0000-000000000000';
 
-            const url = isUpdate ? '@Url.Page("Employees", "Update")' : '@Url.Page("Employees", "Create")';
+            const url = isUpdate
+                ? '@Url.Page("Employees", "Update")'
+                : '@Url.Page("Employees",  "Create" )';
 
             $.ajax({
                 url: url,
@@ -89,6 +93,7 @@
                 }
             });
         });
+
     </script>
 
 

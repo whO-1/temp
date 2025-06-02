@@ -4,17 +4,17 @@ namespace EmployeeManagement.API.Models.ViewModels
 {
 	public class EmployeeViewModel
 	{
-		public  Guid Id { get; set; }
+		public  string Id { get; set; } = string.Empty;
 		[Required]
-		public string FullName { get; set; }
+		public string FullName { get; set; } = string.Empty;
 		[Required]
-		public DateTime Birthday { get; set; }
+		public string Birthday { get; set; } = string.Empty;
 		[Required]
 		public float Salary { get; set; }
 		[Required]
-		public DateTime StartedFrom { get; set; }
-		public DateTime? EndedAt { get; set; }
+		public string StartedFrom { get; set; } = string.Empty;
+		public string? EndedAt { get; set; }
 		[Required]
-		public Guid PositionId { get; set; }
+		public string PositionId { get; set; } = string.Empty;
 	}
 }

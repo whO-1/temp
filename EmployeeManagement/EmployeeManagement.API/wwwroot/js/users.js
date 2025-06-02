@@ -30,7 +30,7 @@ function loadDataTable() {
                 "render": function (data) {
                     return (`
                         <div class="btn-group " role="group">
-                            <button  type="button" class="edit-btn btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateEmployeeModal" data-id="${data}">
+                            <button onclick="openEmployeeModal('${data}')" type="button" class="edit-btn btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateEmployeeModal" data-id="${data}">
                                 Edit
                             </button>
                             <button  class="delete-btn btn btn-danger" data-id="${data}">Delete</button>
@@ -65,5 +65,3 @@ $('#tblData').on('click', '.delete-btn', function () {
         });
     }
 }); 
-
-
